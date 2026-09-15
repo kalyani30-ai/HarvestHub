@@ -255,12 +255,6 @@ router.post("/login", async (req, res) => {
     );
 
     try {
-      await sendLoginConfirmation(existingUser.user.email, existingUser.user.name, actualUserType);
-    } catch (emailError) {
-      console.error('Login confirmation email failed:', emailError);
-    }
-
-    try {
       const LoginLog = require('../models/LoginLog');
       await LoginLog.create({
         email: lookupEmail,
@@ -282,6 +276,18 @@ router.post("/login", async (req, res) => {
       user: buildAuthResponse(existingUser.user, actualUserType),
       wasNewUser: wasNewUser
     });
+
+    if (process.env.EMAIL_USER && process.env.EMAIL_PASS) {
+      void sendLoginConfirmation(existingUser.user.email, existingUser.user.name, actualUserType)
+        .then((result) => {
+          if (!result?.success) {
+            console.error('Login confirmation email failed:', result?.error || 'Unknown email error');
+          }
+        })
+        .catch((emailError) => {
+          console.error('Login confirmation email failed:', emailError);
+        });
+    }
   } catch (error) {
     console.error('Login error:', error);
     res.status(500).json({ message: 'Server error during login.' });
