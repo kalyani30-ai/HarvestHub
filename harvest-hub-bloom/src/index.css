@@ -1,0 +1,242 @@
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Poppins:wght@400;500;600;700;800&display=swap');
+
+/* Import calligraphic fonts */
+@import url('https://fonts.googleapis.com/css2?family=Dancing+Script:wght@400;500;600;700&family=Great+Vibes:wght@400&family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600;1,700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --transition-fast: 180ms cubic-bezier(0.22, 1, 0.36, 1);
+  --transition-medium: 280ms cubic-bezier(0.22, 1, 0.36, 1);
+  --transition-slow: 420ms cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-standard: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-soft: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-emphasized: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --shadow-soft: 0 20px 45px rgba(30, 60, 37, 0.12);
+  --shadow-strong: 0 28px 60px rgba(20, 42, 22, 0.16);
+
+  --background: 40 40% 98%;
+  --foreground: 150 20% 12%;
+  --card: 0 0% 100%;
+  --card-foreground: 150 20% 12%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 150 20% 12%;
+  --primary: 146 39% 24%;
+  --primary-foreground: 40 40% 98%;
+  --secondary: 43 88% 45%;
+  --secondary-foreground: 40 40% 98%;
+  --muted: 40 40% 95%;
+  --muted-foreground: 150 8% 42%;
+  --accent: 96 40% 44%;
+  --accent-foreground: 40 40% 98%;
+  --destructive: 0 84.2% 60.2%;
+  --destructive-foreground: 40 40% 98%;
+  --border: 150 18% 87%;
+  --input: 150 18% 87%;
+  --ring: 146 39% 24%;
+  --radius: 0.9rem;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  @apply bg-background text-foreground antialiased;
+  font-family: 'Inter', sans-serif;
+  background-image: radial-gradient(circle at top left, rgba(101, 163, 13, 0.08), transparent 24%), linear-gradient(180deg, #fcfaf5 0%, #f8f4e8 100%);
+}
+
+::selection {
+  background: hsl(var(--primary));
+  color: white;
+}
+
+button,
+.btn,
+.btn-primary,
+.btn-secondary,
+a,
+.nav-link,
+.text-link {
+  transition: transform var(--transition-fast), opacity var(--transition-fast), color var(--transition-fast), background-color var(--transition-fast), box-shadow var(--transition-fast), border-color var(--transition-fast);
+  transform-origin: center;
+}
+
+button:hover,
+.btn:hover,
+.btn-primary:hover,
+.btn-secondary:hover,
+a:hover,
+.nav-link:hover,
+.text-link:hover {
+  transform: translateY(-1px);
+}
+
+button:active,
+.btn:active,
+.btn-primary:active,
+.btn-secondary:active,
+a:active,
+.nav-link:active,
+.text-link:active {
+  transform: scale(0.98);
+}
+
+button:focus-visible,
+.btn:focus-visible,
+.btn-primary:focus-visible,
+.btn-secondary:focus-visible,
+a:focus-visible,
+.nav-link:focus-visible,
+.text-link:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(101, 163, 13, 0.2);
+}
+
+.navbar,
+.site-nav,
+.top-nav {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  transition: background-color var(--transition-medium), box-shadow var(--transition-medium), padding var(--transition-medium), transform var(--transition-medium);
+}
+
+.product-card,
+.card-hover {
+  position: relative;
+  overflow: hidden;
+  transition: transform var(--transition-medium), box-shadow var(--transition-medium), border-color var(--transition-fast);
+  will-change: transform;
+}
+
+.product-card:hover,
+.card-hover:hover {
+  transform: translateY(-8px);
+  box-shadow: var(--shadow-soft);
+}
+
+.product-card:hover .product-image,
+.product-card:hover img,
+.product-card:hover .card-image {
+  transform: scale(1.04);
+}
+
+.product-card .product-image,
+.product-card img,
+.product-card .card-image {
+  transition: transform var(--transition-medium);
+  will-change: transform;
+}
+
+@keyframes reveal-up {
+  0% {
+    opacity: 0;
+    transform: translateY(24px) scale(0.98);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.animate-reveal,
+.stagger-item {
+  animation: reveal-up var(--transition-slow) var(--ease-soft) both;
+  animation-delay: var(--stagger-delay, 0ms);
+}
+
+.stagger-grid > .stagger-item {
+  opacity: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Poppins', sans-serif;
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply bg-harvest-green px-6 py-3 rounded-full font-medium shadow-sm transition-all hover:bg-harvest-green-dark hover:shadow-md focus:ring-2 focus:ring-harvest-green-light focus:ring-opacity-50;
+  }
+
+  .btn-secondary {
+    @apply bg-harvest-gold px-6 py-3 rounded-full font-medium shadow-sm transition-all hover:bg-harvest-gold-dark hover:shadow-md focus:ring-2 focus:ring-harvest-gold-light focus:ring-opacity-50;
+  }
+
+  .page-container {
+    @apply mx-auto w-full max-w-7xl px-4 py-12 sm:px-6 lg:px-8;
+  }
+
+  .section-title {
+    @apply text-3xl md:text-4xl font-semibold tracking-tight text-slate-900 dark:text-slate-100;
+  }
+
+  .card-hover {
+    @apply transition-all duration-300 hover:shadow-xl hover:-translate-y-1;
+  }
+
+  .nav-link {
+    @apply rounded-full px-3 py-2 font-medium transition-all hover:bg-white/70 hover:text-harvest-green dark:hover:bg-slate-800/70;
+  }
+
+  .glass-card {
+    @apply rounded-3xl border border-white/70 bg-white/75 shadow-[0_20px_60px_rgba(15,23,42,0.08)] backdrop-blur-xl;
+  }
+
+  .font-calligraphic {
+    font-family: 'Great Vibes', cursive;
+  }
+
+  .animate-fade-in {
+    animation: fadeIn 1s ease-in-out;
+  }
+
+  .animate-fade-in-delay {
+    animation: fadeIn 1s ease-in-out 0.5s both;
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+::placeholder {
+  color: #7b8a73 !important;
+  opacity: 1;
+}
+
+@media (max-width: 600px) {
+  body, h1, h2, h3, h4, h5, h6, p, label, span, small, .text, .text-sm, .text-xs {
+    font-size: 0.98rem;
+  }
+}
