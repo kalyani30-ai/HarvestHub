@@ -1,8 +1,9 @@
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
+require('dotenv').config();
 
 // MongoDB Connection String
-const MONGO_URI = 'mongodb+srv://Customer:customer111@cluster0.wf0ym9y.mongodb.net/Harvesthub';
+const MONGODB_URI = process.env.MONGODB_URI || process.env.MONGO_URI;
 
 // Import models
 const Customer = require('./models/Customer');
@@ -12,10 +13,10 @@ const Product = require('./models/Product');
 const testMongoDBConnection = async () => {
   try {
     console.log('🔍 Testing MongoDB Connection...');
-    console.log('🔗 URI:', MONGO_URI);
+    console.log('🔗 URI:', MONGODB_URI);
     
     // Connect to MongoDB
-    await mongoose.connect(MONGO_URI, {
+    await mongoose.connect(MONGODB_URI, {
       useNewUrlParser: true,
       useUnifiedTopology: true
     });

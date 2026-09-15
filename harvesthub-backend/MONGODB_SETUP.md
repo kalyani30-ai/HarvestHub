@@ -7,7 +7,7 @@ Create a `.env` file in the `harvesthub-backend` folder with:
 
 ```env
 # MongoDB Connection
-MONGO_URI=mongodb://localhost:27017/harvesthub
+MONGODB_URI=mongodb://localhost:27017/harvesthub
 # Or for MongoDB Atlas: mongodb+srv://username:password@cluster.mongodb.net/harvesthub
 
 # JWT Secret for token generation
@@ -29,16 +29,16 @@ NODE_ENV=development
 #### Option A: Local MongoDB
 1. Install MongoDB locally
 2. Start MongoDB service
-3. Use: `MONGO_URI=mongodb://localhost:27017/harvesthub`
+3. Use: `MONGODB_URI=mongodb://localhost:27017/harvesthub`
 
 #### Option B: MongoDB Atlas (Cloud)
 1. Create free account at [MongoDB Atlas](https://www.mongodb.com/atlas)
 2. Create a cluster
 3. Get connection string
-4. Use: `MONGO_URI=mongodb+srv://username:password@cluster.mongodb.net/harvesthub`
+4. Use: `MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/harvesthub`
 
 #### Option C: No MongoDB (Fallback)
-- If no `MONGO_URI` is set, the app will use in-memory storage
+- If no `MONGODB_URI` or `MONGO_URI` is set, the app will use in-memory storage
 - Perfect for testing without database setup
 
 ### 3. Start the Server

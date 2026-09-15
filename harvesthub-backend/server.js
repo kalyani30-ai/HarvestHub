@@ -42,9 +42,8 @@ const PORT = process.env.PORT ? Number(process.env.PORT) : 5000;
 
 // MongoDB Connection String - Prioritizes Render Environment Variables
 const MONGO_URIS = [
-  process.env.MONGO_URI,
   process.env.MONGODB_URI,
-  'mongodb+srv://Customer:customer111@cluster0.wf0ym9y.mongodb.net/HarvestHub',
+  process.env.MONGO_URI,
   'mongodb://localhost:27017/HarvestHub'
 ].filter(Boolean);
 
@@ -61,7 +60,7 @@ const connectDB = async () => {
       });
       console.log('✅ MongoDB connected successfully to HarvestHub database!');
       console.log('📊 Database: HarvestHub');
-      console.log(`🔗 Connection: ${uri}`);
+      console.log('🔗 MongoDB connection established using environment configuration.');
       return; // Successfully connected
     } catch (error) {
       console.log(`❌ Failed to connect with URI: ${uri}`);

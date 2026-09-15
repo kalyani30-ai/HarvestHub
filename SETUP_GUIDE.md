@@ -27,7 +27,7 @@ PORT=5000
 NODE_ENV=development
 
 # MongoDB Configuration
-MONGO_URI=mongodb://localhost:27017/harvesthub
+MONGODB_URI=mongodb://localhost:27017/harvesthub
 
 # JWT Configuration
 JWT_SECRET=your_super_secret_jwt_key_here
@@ -233,7 +233,7 @@ const sampleProducts = [
 ];
 
 // Run seeding
-mongoose.connect(process.env.MONGO_URI)
+mongoose.connect(process.env.MONGODB_URI)
   .then(() => {
     return Product.insertMany(sampleProducts);
   })
@@ -299,7 +299,7 @@ mongoose.connect(process.env.MONGO_URI)
 
 2. **MongoDB Connection Error**
    - Verify MongoDB is running
-   - Check MONGO_URI in .env file
+    - Check MONGODB_URI in .env file
 
 3. **API 404 Errors**
    - Verify backend is running on port 5000
