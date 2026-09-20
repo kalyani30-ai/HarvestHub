@@ -21,6 +21,9 @@ const Review = require('./models/Review');
 const Admin = require('./models/Admin');
 const Notification = require('./models/Notification');
 
+// Initialize email service
+require('./utils/emailService');
+
 // Import routes
 const authRoutes = require('./routes/authRoutes');
 const customerRoutes = require('./routes/customerRoutes');
