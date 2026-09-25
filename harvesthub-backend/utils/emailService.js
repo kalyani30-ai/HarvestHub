@@ -1,34 +1,31 @@
 const nodemailer = require('nodemailer');
 
-// Create a Nodemailer transporter configured to use Gmail
-const transporter = nodemailer.createTransport({
-  host: 'smtp.gmail.com',
-  port: 465,
-  secure: true,
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS
-  },
-  tls: {
-    rejectUnauthorized: false
-  }
-});
+// Create transporter only if email credentials are configured
+let transporter = null;
 
-// Optional: verify transporter on startup for easier debugging
-transporter.verify((verifyError, success) => {
-  if (verifyError) {
-    console.error('[Email] Transporter verification failed:', {
-      message: verifyError.message,
-      code: verifyError.code,
-      response: verifyError.response,
-      responseCode: verifyError.responseCode,
-      command: verifyError.command,
-      stack: verifyError.stack
-    });
-  } else {
-    console.log('[Email] Transporter is ready to send emails.');
-  }
-});
+if (process.env.EMAIL_USER && process.env.EMAIL_PASS) {
+  transporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+      user: process.env.EMAIL_USER,
+      pass: process.env.EMAIL_PASS
+    }
+  });
+  console.log('[Email] Email service configured with Gmail');
+} else if (process.env.SENDGRID_API_KEY) {
+  transporter = nodemailer.createTransport({
+    host: 'smtp.sendgrid.net',
+    port: 587,
+    secure: false,
+    auth: {
+      user: 'apikey',
+      pass: process.env.SENDGRID_API_KEY
+    }
+  });
+  console.log('[Email] Email service configured with SendGrid');
+} else {
+  console.log('[Email] Email service not configured - emails will not be sent (app will still work)');
+}
 
 // Utility: log rich Nodemailer error details
 const logNodemailerError = (error, context) => {
@@ -48,6 +45,12 @@ const logNodemailerError = (error, context) => {
 
 // Async function to send login confirmation email
 const sendLoginConfirmation = async (userEmail, userName, userType = 'customer') => {
+  // Check if email service is configured
+  if (!transporter) {
+    console.log('[Email] Email service not configured - skipping login confirmation email');
+    return { success: false, skipped: true, message: 'Email service not configured' };
+  }
+
   try {
     const normalizedUserType = userType && userType.toLowerCase() === 'farmer' ? 'Farmer' : 'Customer';
     const loginTime = new Date().toLocaleString();
@@ -99,6 +102,12 @@ const sendLoginConfirmation = async (userEmail, userName, userType = 'customer')
 
 // Async function to send order confirmation email
 const sendOrderConfirmation = async (userEmail, userName, orderData) => {
+  // Check if email service is configured
+  if (!transporter) {
+    console.log('[Email] Email service not configured - skipping order confirmation email');
+    return { success: false, skipped: true, message: 'Email service not configured' };
+  }
+
   try {
     const orderId = orderData && (orderData._id || orderData.orderId || 'N/A');
     const orderDate = new Date().toLocaleString();
@@ -177,6 +186,12 @@ const sendOrderConfirmation = async (userEmail, userName, orderData) => {
 };
 
 const sendWelcomeEmail = async (userEmail, userName, userType = 'customer') => {
+  // Check if email service is configured
+  if (!transporter) {
+    console.log('[Email] Email service not configured - skipping welcome email');
+    return { success: false, skipped: true, message: 'Email service not configured' };
+  }
+
   try {
     const normalizedUserType = userType && userType.toLowerCase() === 'farmer' ? 'Farmer' : 'Customer';
     const mailOptions = {
@@ -226,6 +241,12 @@ const sendWelcomeEmail = async (userEmail, userName, userType = 'customer') => {
 
 // Async function to send password reset email
 const sendPasswordResetEmail = async (userEmail, userName, resetUrl) => {
+  // Check if email service is configured
+  if (!transporter) {
+    console.log('[Email] Email service not configured - skipping password reset email');
+    return { success: false, skipped: true, message: 'Email service not configured' };
+  }
+
   try {
     const mailOptions = {
       from: process.env.EMAIL_USER,

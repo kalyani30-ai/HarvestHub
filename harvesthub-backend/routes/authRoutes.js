@@ -415,12 +415,13 @@ router.post("/farmer-application", authenticateToken, upload.fields([
     // Get the authenticated user from token
     const userId = req.user._id || req.user.id;
     const userEmail = req.user.email || email;
+    const userType = req.userType;
 
-    // Check if user already exists as a farmer
+    // Check if user already exists as a farmer (in Farmer collection)
     let existingFarmer = await Farmer.findOne({ email: userEmail.toLowerCase().trim() });
     
     if (existingFarmer) {
-      // Update existing farmer
+      // Update existing farmer (preserve existing Farmer collection functionality)
       existingFarmer.name = name;
       existingFarmer.phone = phone;
       existingFarmer.farmAddress = farmAddress;
@@ -448,11 +449,63 @@ router.post("/farmer-application", authenticateToken, upload.fields([
       });
     }
 
-    // Check if user exists as customer
-    const existingCustomer = await Customer.findOne({ email: userEmail.toLowerCase().trim() });
+    // If authenticated user is a Customer, update the Customer document instead of creating new Farmer
+    if (userType === 'customer' && req.user) {
+      const existingCustomer = await Customer.findById(userId);
+
+      if (existingCustomer) {
+        // Add farmer role if not already present
+        if (!existingCustomer.roles.includes('farmer')) {
+          existingCustomer.roles.push('farmer');
+        }
+
+        // Update farmer-specific fields on Customer document
+        existingCustomer.name = name;
+        existingCustomer.phone = phone;
+        existingCustomer.farmAddress = farmAddress;
+        existingCustomer.farmType = farmType;
+        existingCustomer.farmLocation = farmLocation;
+        existingCustomer.experience = experience;
+        existingCustomer.description = description;
+
+        // Add farm images if uploaded
+        if (files && files.farmImages) {
+          const farmImagePaths = files.farmImages.map(file => '/uploads/' + file.filename);
+          existingCustomer.farmImages = [...(existingCustomer.farmImages || []), ...farmImagePaths];
+        }
+
+        // Add ID proofs if uploaded
+        if (files && files.idProofs) {
+          const idProofPaths = files.idProofs.map(file => '/uploads/' + file.filename);
+          existingCustomer.idProofs = [...(existingCustomer.idProofs || []), ...idProofPaths];
+        }
+
+        // Initialize wallet balance if not set
+        if (existingCustomer.walletBalance === undefined) {
+          existingCustomer.walletBalance = 0;
+        }
+
+        await existingCustomer.save();
+
+        // Generate new token with both customer and farmer roles
+        const token = jwt.sign(
+          { id: existingCustomer._id, email: existingCustomer.email, userType: 'farmer' },
+          process.env.JWT_SECRET || 'harvesthub_secret_key_2024',
+          { expiresIn: '7d' }
+        );
+
+        return res.status(200).json({
+          message: 'Farmer application submitted successfully.',
+          token,
+          userType: 'farmer',
+          activeRole: 'farmer',
+          user: buildAuthResponse(existingCustomer, 'farmer')
+        });
+      }
+    }
     
-    // Create new farmer profile
-    const hashedPassword = existingCustomer ? existingCustomer.password : await bcrypt.hash('demo123', 10);
+    // Fallback: Create new farmer profile (for non-customer users)
+    const hashedPassword = await bcrypt.hash('demo123', 10);
     
     const newFarmer = new Farmer({
       name: name,

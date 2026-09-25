@@ -244,6 +244,10 @@ const FarmerRegistrationForm = () => {
           roles: data.user?.roles || [...(currentSession.roles || []), 'farmer']
         };
         writeAuthSession(updatedSession);
+
+        // Also set farmerToken in localStorage for FarmerDashboard compatibility
+        localStorage.setItem('farmerToken', data.token || currentSession.token);
+        localStorage.setItem('farmerUser', JSON.stringify(data.user || currentSession.user));
       }
 
       // Application submitted successfully - status is 'pending'

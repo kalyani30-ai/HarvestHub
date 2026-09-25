@@ -3,6 +3,7 @@ const router = express.Router();
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const Farmer = require("../models/Farmer");
+const Customer = require("../models/Customer");
 const { authenticateToken, requireFarmer } = require("../middleware/auth");
 const multer = require('multer');
 const path = require('path');
@@ -272,8 +273,19 @@ router.post("/login", async (req, res) => {
 // ✅ Get farmer profile (protected route)
 router.get("/profile", authenticateToken, requireFarmer, async (req, res) => {
   try {
-    const farmer = await Farmer.findById(req.user._id).select('-password');
-    res.json(farmer);
+    // Check if user is in Farmer collection or Customer collection with farmer role
+    let user = await Farmer.findById(req.user._id).select('-password');
+
+    if (!user && req.userType === 'customer') {
+      // User is a customer with farmer role
+      user = await Customer.findById(req.user._id).select('-password');
+    }
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    res.json(user);
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Server error" });
@@ -285,13 +297,29 @@ router.put("/profile", authenticateToken, requireFarmer, async (req, res) => {
   const { name, phone, farmAddress } = req.body;
 
   try {
-    const updatedFarmer = await Farmer.findByIdAndUpdate(
-      req.user._id,
-      { name, phone, farmAddress },
-      { new: true }
-    ).select('-password');
+    // Check if user is in Farmer collection or Customer collection with farmer role
+    let user = await Farmer.findById(req.user._id);
 
-    res.json(updatedFarmer);
+    if (!user && req.userType === 'customer') {
+      // User is a customer with farmer role
+      user = await Customer.findById(req.user._id);
+    }
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // Update the user
+    user.name = name;
+    user.phone = phone;
+    user.farmAddress = farmAddress;
+    await user.save();
+
+    // Return updated user without password
+    const updatedUser = user.toObject();
+    delete updatedUser.password;
+
+    res.json(updatedUser);
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Server error" });
@@ -303,10 +331,20 @@ router.put("/change-password", authenticateToken, requireFarmer, async (req, res
   const { currentPassword, newPassword } = req.body;
 
   try {
-    const farmer = await Farmer.findById(req.user._id);
+    // Check if user is in Farmer collection or Customer collection with farmer role
+    let user = await Farmer.findById(req.user._id);
+
+    if (!user && req.userType === 'customer') {
+      // User is a customer with farmer role
+      user = await Customer.findById(req.user._id);
+    }
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
     
     // Verify current password
-    const isMatch = await bcrypt.compare(currentPassword, farmer.password);
+    const isMatch = await bcrypt.compare(currentPassword, user.password);
     if (!isMatch) {
       return res.status(400).json({ message: "Current password is incorrect" });
     }
@@ -315,8 +353,8 @@ router.put("/change-password", authenticateToken, requireFarmer, async (req, res
     const hashedNewPassword = await bcrypt.hash(newPassword, 10);
     
     // Update password
-    farmer.password = hashedNewPassword;
-    await farmer.save();
+    user.password = hashedNewPassword;
+    await user.save();
 
     res.json({ message: "Password updated successfully" });
   } catch (error) {
@@ -329,12 +367,26 @@ router.put("/change-password", authenticateToken, requireFarmer, async (req, res
 router.post('/profile/upload-image', authenticateToken, requireFarmer, upload.single('profileImage'), async (req, res) => {
   try {
     const imagePath = '/uploads/' + req.file.filename;
-    const farmer = await Farmer.findByIdAndUpdate(
-      req.user._id,
-      { profileImage: imagePath },
-      { new: true }
-    ).select('-password');
-    res.json({ message: 'Profile image updated', farmer });
+
+    // Check if user is in Farmer collection or Customer collection with farmer role
+    let user = await Farmer.findById(req.user._id);
+
+    if (!user && req.userType === 'customer') {
+      // User is a customer with farmer role
+      user = await Customer.findById(req.user._id);
+    }
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    user.profileImage = imagePath;
+    await user.save();
+
+    // Return updated user without password
+    const updatedUser = user.toObject();
+    delete updatedUser.password;
+    res.json({ message: 'Profile image updated', user: updatedUser });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: 'Server error' });

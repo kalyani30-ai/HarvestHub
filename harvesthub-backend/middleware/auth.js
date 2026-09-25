@@ -28,6 +28,12 @@ const authenticateToken = async (req, res, next) => {
       return res.status(401).json({ message: 'Invalid token' });
     }
 
+    // If user has multiple roles, use the userType from the token
+    // This allows customers with farmer role to access farmer routes
+    if (decoded.userType && user.roles && user.roles.includes(decoded.userType)) {
+      userType = decoded.userType;
+    }
+
     req.user = user;
     req.userType = userType;
     next();
