@@ -9,6 +9,8 @@ const cors = require('cors');
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const fs = require('fs');
+const path = require('path');
 
 // Import models
 const Customer = require('./models/Customer');
@@ -23,6 +25,13 @@ const Notification = require('./models/Notification');
 
 // Initialize email service
 require('./utils/emailService');
+
+// Ensure uploads directory exists
+const uploadsDir = path.join(__dirname, 'public/uploads');
+if (!fs.existsSync(uploadsDir)) {
+  fs.mkdirSync(uploadsDir, { recursive: true });
+  console.log('✅ Created uploads directory:', uploadsDir);
+}
 
 // Import routes
 const authRoutes = require('./routes/authRoutes');
